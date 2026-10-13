@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    {% block title %}
+      ARSIPAL - Arsip Lokal
+    {% endblock  %}
+  </title>
+  {% load static %}
+  <link rel="shortcut icon" type="image/png" href="{% static 'arsip_ui/img/favicon.svg' %}">
+  <script src="{% static 'arsip_ui/scripts/tailwind.js' %}"></script>
+  <script src="{% static 'arsip_ui/scripts/sweetalert2.js' %}"></script>
+  <script src="{% static 'arsip_ui/scripts/navbar/darkmode.js' %}"></script>
+  <style>
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0); 
+    }
+
+    .dark input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+  </style>
+</head>
+<body class="dark:bg-[#344C64]">
+  <!-- Mobile hamburger button -->
+  <button id="mobile-menu-button" class="md:hidden fixed top-3 right-4 z-50 p-2 rounded-lg bg-[#4DA2CD] dark:bg-[#263544] border border-1 text-white dark:border-gray-500">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+    </svg>
+  </button>
+
+  <!-- Sidebar for mobile -->
+  <div id="mobile-sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:hidden w-64 bg-[#4DA2CD] dark:bg-[#263544] transition-transform duration-300 ease-in-out z-40 dark:border dark:border-t-0 dark:border-l-0 dark:border-b-0 dark:border-gray-500">
+    <div class="flex flex-col h-full">
+      <!-- Top section with logo -->
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-8">
+          <img src="{% static 'arsip_ui/img/open-book.svg' %}" alt="Arsipal" class="size-8">
+          <h1 class="text-white font-bold text-lg">ARSIPAL</h1>
+        </div>
+        <!-- Navigation links -->
+        <nav class="space-y-6">
+          <a href="{% url 'dashboard' %}" class="block text-white hover:bg-[#3b89b4] dark:hover:bg-[#344C64] px-4 py-2 rounded-lg" data-path="/dashboard/">
+            Dashboard
+          </a>
+          <a href="{% url 'daftar_dokumen' %}" class="block text-white hover:bg-[#3b89b4] dark:hover:bg-[#344C64] px-4 py-2 rounded-lg" data-path="/dokumen/">
+            Dokumen
+          </a>
+        </nav>
+      </div>
+      
+      <!-- Bottom section with profile and dark mode -->
+      <div class="mt-auto border-t border-[#3b89b4] dark:border-gray-500 p-6">
+        <!-- Dark mode toggle -->
+        <div class="flex items-center gap-3">
+          <!-- Tombol untuk mengaktifkan Dark Mode (tampil saat mode light aktif) -->
+          <button type="button" class="text-white hover:bg-[#3b89b4] dark:hover:bg-[#344C64] px-4 py-2 rounded-lg w-full text-left block" id="btnActivateDark" data-theme="light">
+            <span class="flex items-center gap-2">
+              <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2"></path>
+                <path d="M12 20v2"></path>
+                <path d="M4.93 4.93l1.41 1.41"></path>
+                <path d="M17.66 17.66l1.41 1.41"></path>
+                <path d="M2 12h2"></path>
+                <path d="M20 12h2"></path>
+                <path d="M6.34 17.66l-1.41 1.41"></path>
+                <path d="M19.07 4.93l-1.41 1.41"></path>
+              </svg>
+              Light Mode
+            </span>
+          </button>
+
+          <!-- Tombol untuk mengaktifkan Light Mode (tampil saat mode dark aktif) -->
+          <button type="button" class="text-white hover:bg-[#3b89b4] dark:hover:bg-[#344C64] px-4 py-2 rounded-lg w-full text-left hidden" id="btnActivateLight" data-theme="dark">
+            <span class="flex items-center gap-2">
+              <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+              Dark Mode
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop navbar -->
+  <nav class="bg-[#4DA2CD] dark:bg-[#263544] pl-8 pr-4 md:px-auto md:h-18 fixed top-0 left-0 right-0 z-30 block">
+    <div class="md:px-4 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="text-white flex items-center gap-3 md:mr-8">
+        <img src="{% static 'arsip_ui/img/open-book.svg' %}" alt="Arsipal" class="md:size-10 size-8">
+        <h1 class="font-bold text-lg">ARSIPAL</h1>
+      </div>
+
+      <!-- Desktop navigation + Right-side items -->
+      <div class="flex items-center gap-8">
+        <!-- Menu Desktop -->
+        <ul class="flex font-semibold gap-16 lg:gap-32 text-white hidden md:inline-flex items-center justify-between md:mr-10 lg:mr-16">
+          <li class="md:py-5">
+            <a href="{% url 'dashboard' %}" class="relative w-fit block after:block after:content-[''] after:absolute after:h-[3px] after:bg-white after:w-full after:scale-x-0 after:hover:scale-x-95 after:transition after:duration-300 after:origin-center" data-path="/dashboard/">
+              Dashboard
+            </a>
+          </li>
+          <li class="md:py-5">
+            <a href="{% url 'daftar_dokumen' %}" class="relative w-fit block after:block after:content-[''] after:absolute after:h-[3px] after:bg-white after:w-full after:scale-x-0 after:hover:scale-x-95 after:transition after:duration-300 after:origin-center" data-path="/dokumen/">
+              Dokumen
+            </a>
+          </li>
+        </ul>
+
+        <!-- Bagian Profil + Dark Mode -->
+        <div class="flex items-center">
+          <!-- Profile -->
+          <div class="relative flex items-center p-2 md:p-0 md:ml-10 ml-3 mr-6">
+            <button id="profile-button" class="flex items-center gap-1">
+              <img src="{% static 'arsip_ui/img/default-profile.svg' %}" alt="" class="size-12">
+            </button>
+            <div id="dropdown-menu" class="hidden absolute top-[calc(100%+10px)] left-[-40px] mt-2 w-44 bg-white rounded-xl shadow-lg z-40 border border-gray-200 text-sm dark:bg-[#344C64] dark:border-gray-500">
+              <a href="{% url 'login_history' %}" class="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 dark:hover:bg-[#506d8a] duration-200 ease-in-out rounded-t-xl">
+                <img src="{% static 'arsip_ui/img/history-icon.svg' %}" alt="history icon" class="w-5 h-5 mr-3 invert dark:invert-0">
+                <p class="dark:text-white">Riwayat Masuk</p>
+              </a>
+              <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 text-red-600 dark:text-red-400 hover:bg-gray-100 transition duration-200 ease-in-out rounded-b-xl dark:hover:bg-[#506d8a]" id="logout-btn">
+                <img src="{% static 'arsip_ui/img/logout-icon.svg' %}" alt="Logout Icon" class="w-5 h-5 mr-3">
+                Keluar
+              </a>
+            </div>            
+          </div>
+
+          <!-- Tombol Toggle Dark Mode -->
+          <button type="button" id="toggleDarkMode" class="font-medium text-gray-800 rounded-full dark:text-neutral-200">
+            <span class="group inline-flex shrink-0 justify-center items-center size-9" id="darkModeIcon">
+ 
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Overlay for mobile sidebar -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black opacity-50 z-30 hidden md:hidden dark:bg-[#263544]"></div>
+
+  {% block content %}
+  {% endblock  %}
+  <script src="{% static 'arsip_ui/scripts/navbar/button.js' %}"></script>
+  <script src="{% static 'arsip_ui/scripts/navbar/main.js' %}"></script>
+</body>
+</html>

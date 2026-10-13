@@ -1,0 +1,175 @@
+{% extends "arsip_ui/layout.html" %}
+
+{% load static %}
+{% block title %}
+    Dashboard
+{% endblock  %}
+
+{% block content %}
+    <section class="px-3 overflow-y-auto mt-[65px]">
+        <div class="flex gap-8 my-6 justify-self-center">
+            <a href="{% url 'daftar_dokumen' %}">
+            <div class="w-[280px] h-[125px] bg-red-400 dark:bg-red-600 relative text-sm font-bold text-white rounded-lg shadow-lg">
+                <div class="absolute top-3 left-4">
+                    <p class="mb-3">TERUNGGAH HARI INI</p>
+                    <span class="text-5xl">{{ arsip_data.jumlah_hari_ini }}</span>
+                </div>
+                <img src="{% static 'arsip_ui/img/upload-file.svg' %}" alt="recently-uploaded" class="size-[90px] absolute right-3 bottom-2">
+            </div>
+            </a>
+            <a href="{% url 'daftar_dokumen' %}">
+            <div class="w-[280px] h-[125px] bg-green-400 dark:bg-green-600 relative text-sm font-bold text-white rounded-lg shadow-lg">
+                <div class="absolute top-3 left-4">
+                    <p class="mb-3">TOTAL DOKUMEN</p>
+                    <span class="text-5xl">{{ arsip_data.jumlah_dokumen }}</span>
+                </div>
+                <img src="{% static 'arsip_ui/img/docs-icon.svg' %}" alt="total-document" class="size-[80px] absolute right-3 bottom-4">
+            </div>
+            </a>
+        </div>
+        <div class="w-full md:w-[650px] m-auto border border-1 p-6 rounded-lg shadow-2xl dark:bg-[#263544] dark:border-gray-500">
+            <select id="tahunSelect" class="p-2 border rounded-lg dark:bg-[#263544] dark:text-white dark:font-bold dark:border-gray-500">
+
+                {% for arsip in arsip_data.tahun_arsip %}
+                    <option value="{{arsip}}"> {{arsip}} </option>
+                {% endfor %}
+            </select>
+            <canvas id="myChart"></canvas>
+        </div> 
+    </section>
+
+    <script src="{% static 'arsip_ui/scripts/chart.js' %}"></script>
+    <script>
+        const chartData = 
+            {{arsip_data.arsip_dict}}
+        ;
+
+        function isDarkMode() {
+            return document.documentElement.classList.contains('dark');
+        }
+
+        function updateChartColors(chart) {
+            const textColor = isDarkMode() ? 'white' : 'black';
+            const borderColor = isDarkMode() ? 'white' : 'rgba(54, 162, 235, 1)';
+            const gridColor = isDarkMode() ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+
+            chart.options.plugins.title.color = textColor;
+            chart.options.plugins.legend.labels.color = textColor; 
+            chart.options.scales.x.ticks.color = textColor; 
+            chart.options.scales.y.ticks.color = textColor;
+            chart.options.scales.x.title.color = textColor;
+            chart.options.scales.y.title.color = textColor;
+
+            chart.data.datasets.forEach(dataset => {
+                dataset.borderColor = borderColor;
+            });
+
+            chart.options.scales.x.grid.color = gridColor;
+            chart.options.scales.y.grid.color = gridColor;
+
+            chart.update();
+        }
+        let myChart = null;
+
+        function initChart(tahun) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            if(myChart) {
+                myChart.destroy();
+            }
+
+            const textColor = isDarkMode() ? 'white' : 'black';
+            const borderColor = isDarkMode() ? 'white' : 'rgba(54, 162, 235, 1)';
+            const gridColor = isDarkMode() ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+                    datasets: [{
+                        label: `Jumlah Dokumen per Bulan`,
+                        data: chartData[tahun],
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: borderColor,
+                        borderWidth: 2,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Jumlah Dokumen ${tahun}`,
+                            font: { size: 20 },
+                            color: textColor
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { 
+                                display: true, 
+                                text: 'Jumlah Dokumen', 
+                                color: textColor
+                            },
+                            ticks: { color: textColor },
+                            grid: {
+                                color: gridColor
+                            }
+                        },
+                        x: {
+                            title: { 
+                                display: true, 
+                                text: 'Bulan', 
+                                color: textColor
+                            },
+                            ticks: { color: textColor },
+                            grid: {
+                                color: gridColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const defaultYear = document.getElementById('tahunSelect').value;
+            initChart(defaultYear);
+        });
+
+        document.getElementById('tahunSelect').addEventListener('change', function(e) {
+            initChart(e.target.value);
+        });
+    </script>
+    {% if messages %}
+        <script>
+            {% for message in messages %}
+                const isDarkModeEnabled = (localStorage.getItem('theme') === 'dark');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: "{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}error{% else %}info{% endif %}",
+                    title: "{{ message|escapejs }}",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: isDarkModeEnabled ? "#344C64" : "#fff",
+                    color: isDarkModeEnabled ? "#fff" : "#000",
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+            {% endfor %}
+        </script>
+    {% endif %}
+{% endblock %}
