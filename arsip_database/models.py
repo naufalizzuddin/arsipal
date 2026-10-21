@@ -44,8 +44,10 @@ class Arsip(models.Model):
 
     def save(self, *args, **kwargs):
             if("" in [self.nomor,self.sifat,self.perihal]):
-                super().save(*args, **kwargs)
-                kata_penting = cari_kata_penting(f"dokumen/{self.file.name}")
+                # Keep an uploaded stream open until FileField saves it to storage.
+                self.file.open('rb')
+                kata_penting = cari_kata_penting(self.file)
+                self.file.seek(0)
                 print(f"{kata_penting=}")
                 if(self.nomor == ""):
                     self.nomor = kata_penting["nomor"]

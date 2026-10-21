@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, FileResponse, HttpResponseNotFound
+from django.core.files.storage import default_storage
 
 from django.template import loader
 from arsip_database.models import Arsip, LoginHistory
@@ -199,8 +200,6 @@ class LoginView(generic.FormView):
         return super().dispatch(request, *args, **kwargs)        
 
     def form_valid(self, form):
-        print(form.cleaned_data)
-        print(self.request.POST)
         user = authenticate(self.request, username=form.cleaned_data["username"],  password=form.cleaned_data["password"])
         if user is not None:
             login(self.request, user)
@@ -236,7 +235,7 @@ def logout_view(request):
 
 def download_dokumen(request, nama):
     try:
-        response = FileResponse(open(f"dokumen/{nama}", "rb"))
+        response = FileResponse(default_storage.open(nama, "rb"))
         return response
     except:
         return HttpResponseNotFound("404 : dokumen tidak ditemukan")

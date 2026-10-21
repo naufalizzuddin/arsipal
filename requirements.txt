@@ -1,2 +1,4 @@
 django==5.1.2
 PyPDF2==3.0.1
+gunicorn>=23,<26
+whitenoise>=6.9,<7
